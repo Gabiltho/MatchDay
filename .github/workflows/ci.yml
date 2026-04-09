@@ -2,48 +2,67 @@ name: CI
 
 on:
   push:
-    branches: ['**']
+    branches: [main]
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  frontend:
-    name: Frontend — Build
+  ci:
+    name: Build & Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
+      - name: Detect changes
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE=${{ github.event.pull_request.base.sha }}
+          else
+            BASE=${{ github.event.before }}
+          fi
+          FRONTEND=$(git diff --name-only $BASE HEAD -- 'frontend/' || echo "frontend/")
+          BACKEND=$(git diff --name-only $BASE HEAD -- 'backend/' || echo "backend/")
+          echo "frontend=$( [ -n "$FRONTEND" ] && echo true || echo false )" >> "$GITHUB_OUTPUT"
+          echo "backend=$( [ -n "$BACKEND" ] && echo true || echo false )" >> "$GITHUB_OUTPUT"
+
+      # ── Frontend ──────────────────────────────────────────────
       - uses: actions/setup-node@v4
+        if: steps.changes.outputs.frontend == 'true'
         with:
           node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
+      - name: Frontend — Install & Build
+        if: steps.changes.outputs.frontend == 'true'
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps && npm run build -- --configuration production
 
-      - name: Build (production)
-        run: npm run build -- --configuration production
-
-  backend:
-    name: Backend — Build & Test
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend/src/MatchDay.Api
-    steps:
-      - uses: actions/checkout@v4
-
+      # ── Backend ───────────────────────────────────────────────
       - uses: actions/setup-dotnet@v4
+        if: steps.changes.outputs.backend == 'true'
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore NuGet packages
-        run: dotnet restore
+      - uses: actions/cache@v4
+        if: steps.changes.outputs.backend == 'true'
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('backend/**/*.csproj') }}
+          restore-keys: nuget-
 
-      - name: Build (Release)
-        run: dotnet build --no-restore --configuration Release
-
-      - name: Test
-        run: dotnet test --no-build --configuration Release --verbosity normal
+      - name: Backend — Restore, Build & Test
+        if: steps.changes.outputs.backend == 'true'
+        working-directory: backend/src/MatchDay.Api
+        run: |
+          dotnet restore
+          dotnet build --no-restore --configuration Release
+          dotnet test --no-build --configuration Release --verbosity normal

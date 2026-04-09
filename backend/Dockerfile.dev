@@ -1,0 +1,12 @@
+# Development Dockerfile with hot reload
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+
+WORKDIR /app
+
+ENV DOTNET_USE_POLLING_FILE_WATCHER=1
+
+EXPOSE 5000
+ENV ASPNETCORE_URLS=http://+:5000
+ENV ASPNETCORE_ENVIRONMENT=Development
+
+ENTRYPOINT ["dotnet", "watch", "run", "--project", "src/MatchDay.Api/MatchDay.Api.csproj", "--urls", "http://+:5000"]

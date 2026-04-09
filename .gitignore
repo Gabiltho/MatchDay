@@ -1,0 +1,43 @@
+# =============================================================================
+# MatchDay .gitignore
+# =============================================================================
+
+# Environment files
+.env
+.env.prod
+!.env.example
+
+# .NET
+backend/**/bin/
+backend/**/obj/
+backend/**/*.db
+backend/**/*.db-journal
+backend/**/*.db-wal
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/coverage/
+
+# Capacitor
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/android/build/
+frontend/android/local.properties
+
+# IDE
+.idea/
+.vscode/
+*.suo
+*.user
+*.sln.docstates
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Keystore
+keystore/*.jks

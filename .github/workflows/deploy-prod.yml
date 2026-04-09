@@ -1,0 +1,147 @@
+name: Deploy — Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy_backend:
+        description: 'Redeploy backend'
+        type: boolean
+        default: false
+      deploy_frontend:
+        description: 'Redeploy frontend'
+        type: boolean
+        default: false
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  # ── 1. Detect what changed ────────────────────────────────────────────────────
+  detect:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.changes.outputs.services }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed services
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            SERVICES=""
+            [ "${{ inputs.deploy_backend }}" = "true" ] && SERVICES="backend"
+            [ "${{ inputs.deploy_frontend }}" = "true" ] && SERVICES="$SERVICES frontend"
+            SERVICES=$(echo $SERVICES | xargs)
+            echo "services=$SERVICES" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          CHANGED=$(git diff --name-only HEAD^ HEAD 2>/dev/null || echo "backend/ frontend/")
+          SERVICES=""
+          echo "$CHANGED" | grep -q "^backend/" && SERVICES="$SERVICES backend"
+          echo "$CHANGED" | grep -q "^frontend/" && SERVICES="$SERVICES frontend"
+          echo "$CHANGED" | grep -qE "^docker-compose|^\.env" && SERVICES="backend frontend"
+          SERVICES=$(echo $SERVICES | xargs)
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+
+  # ── 2. Build & push images vers GHCR ─────────────────────────────────────────
+  build-push:
+    name: Build & Push images (ARM64)
+    needs: detect
+    if: needs.detect.outputs.services != ''
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set lowercase owner
+        run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Set up QEMU (cross-compile ARM64)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push backend
+        if: contains(needs.detect.outputs.services, 'backend')
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/${{ env.OWNER }}/matchday-backend:latest
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: Build & push frontend
+        if: contains(needs.detect.outputs.services, 'frontend')
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/${{ env.OWNER }}/matchday-frontend:latest
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+  # ── 3. Deploy sur la VM ───────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to production
+    needs: [detect, build-push]
+    if: always() && !failure() && !cancelled() && needs.detect.outputs.services != ''
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: SSH — pull & restart
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          SERVICES: ${{ needs.detect.outputs.services }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          command_timeout: 10m
+          script_stop: true
+          envs: SERVICES,GHCR_PAT
+          script: |
+            set -e
+            cd ~/apps/matchday
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "$GHCR_PAT" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+            echo "==> Pulling images: $SERVICES"
+            docker compose -f docker-compose.prod.yml --env-file .env.prod pull $SERVICES
+            docker compose -f docker-compose.prod.yml --env-file .env.prod up -d $SERVICES
+            docker image prune -f
+            echo "==> Deploy complete: $SERVICES"
+
+  # ── Skip info ─────────────────────────────────────────────────────────────────
+  skip:
+    name: No changes
+    needs: detect
+    if: needs.detect.outputs.services == ''
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No backend/frontend changes detected — skipping."

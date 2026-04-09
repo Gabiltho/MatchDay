@@ -1,0 +1,51 @@
+# Development Docker Compose with hot reload
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: matchday-backend-dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/matchday.db
+      - FootballData__ApiKey=${FOOTBALL_DATA_API_KEY:-}
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - matchday-data:/app/data
+    networks:
+      - matchday-network
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: matchday-frontend-dev
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - matchday-network
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    depends_on:
+      - backend
+
+networks:
+  matchday-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+    ipam:
+      config:
+        - subnet: 172.29.0.0/16
+
+volumes:
+  matchday-data:

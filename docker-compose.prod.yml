@@ -1,0 +1,41 @@
+# Production Docker Compose
+services:
+  backend:
+    image: ghcr.io/${GITHUB_OWNER}/matchday-backend:latest
+    container_name: matchday-backend-prod
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/matchday.db
+      - FootballData__ApiKey=${FOOTBALL_DATA_API_KEY:-}
+      - DOTNET_GCConserveMemory=7
+    volumes:
+      - matchday-data:/app/data
+    networks:
+      - matchday-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  frontend:
+    image: ghcr.io/${GITHUB_OWNER}/matchday-frontend:latest
+    container_name: matchday-frontend-prod
+    ports:
+      - "8087:80"
+    networks:
+      - matchday-network
+    restart: unless-stopped
+    depends_on:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 32m
+
+networks:
+  matchday-network:
+    driver: bridge
+
+volumes:
+  matchday-data:

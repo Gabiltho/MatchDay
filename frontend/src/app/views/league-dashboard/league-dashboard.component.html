@@ -1,0 +1,144 @@
+<div class="league-dash">
+      <h1 class="page-title">{{leagueName}}</h1>
+
+      <div class="spinner" *ngIf="loading">
+        <div class="spinner-ring"></div>
+      </div>
+
+      <!-- Regular league dashboard -->
+      <div *ngIf="!loading && !isCL">
+        <!-- Matchdays row -->
+        <div class="matchdays-row">
+          <div class="card">
+            <h2 class="card-title">Journee {{lastMatchday}} — Resultats</h2>
+            <div class="match-list">
+              <div class="match-row" *ngFor="let m of lastMatchdayMatches">
+                <span class="match-home" [class.winner]="m.score?.fullTime?.home > m.score?.fullTime?.away">
+                  <img *ngIf="m.homeTeam?.crest" [src]="m.homeTeam.crest" class="row-crest" alt="">
+                  {{m.homeTeam?.shortName || m.homeTeam?.name}}
+                </span>
+                <span class="match-score-sm">{{m.score?.fullTime?.home}} - {{m.score?.fullTime?.away}}</span>
+                <span class="match-away" [class.winner]="m.score?.fullTime?.away > m.score?.fullTime?.home">
+                  {{m.awayTeam?.shortName || m.awayTeam?.name}}
+                  <img *ngIf="m.awayTeam?.crest" [src]="m.awayTeam.crest" class="row-crest" alt="">
+                </span>
+              </div>
+              <div *ngIf="lastMatchdayMatches.length === 0" class="empty-msg">Aucun resultat</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Journee {{nextMatchday}} — A venir</h2>
+            <div class="match-list">
+              <div class="match-row" *ngFor="let m of nextMatchdayMatches">
+                <span class="match-date">{{formatDateTime(m.utcDate)}}</span>
+                <span class="match-home">
+                  <img *ngIf="m.homeTeam?.crest" [src]="m.homeTeam.crest" class="row-crest" alt="">
+                  {{m.homeTeam?.shortName || m.homeTeam?.name}}
+                </span>
+                <span class="match-vs">vs</span>
+                <span class="match-away">
+                  {{m.awayTeam?.shortName || m.awayTeam?.name}}
+                  <img *ngIf="m.awayTeam?.crest" [src]="m.awayTeam.crest" class="row-crest" alt="">
+                </span>
+              </div>
+              <div *ngIf="nextMatchdayMatches.length === 0" class="empty-msg">Aucun match programme</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Full-width standings -->
+        <div class="card standings-full">
+          <div class="standings-header">
+            <h2 class="card-title">Classement</h2>
+            <button class="see-all-inline" (click)="router.navigate(['/' + leagueCode + '/standings'])">Voir complet</button>
+          </div>
+          <div class="table-wrapper">
+            <table class="standings-table" *ngIf="standings.length > 0">
+              <thead>
+                <tr>
+                  <th class="col-pos">#</th>
+                  <th class="col-team">Equipe</th>
+                  <th>MJ</th>
+                  <th>V</th>
+                  <th>N</th>
+                  <th>D</th>
+                  <th>BP</th>
+                  <th>BC</th>
+                  <th>+/-</th>
+                  <th class="col-pts">Pts</th>
+                  <th class="col-form hide-mobile">Forme</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of standings.slice(0, 10); index as i"
+                    [class.zone-cl]="i < 4"
+                    [class.zone-el]="i === 4"
+                    [class.zone-rel]="i >= standings.length - 3 && standings.length > 10">
+                  <td class="col-pos">{{s.position}}</td>
+                  <td class="col-team">
+                    <img *ngIf="s.team?.crest" [src]="s.team.crest" class="team-crest" alt="">
+                    <span class="team-name">{{s.team?.shortName || s.team?.name}}</span>
+                  </td>
+                  <td>{{s.playedGames}}</td>
+                  <td>{{s.won}}</td>
+                  <td>{{s.draw}}</td>
+                  <td>{{s.lost}}</td>
+                  <td>{{s.goalsFor}}</td>
+                  <td>{{s.goalsAgainst}}</td>
+                  <td [class.positive]="s.goalDifference > 0" [class.negative]="s.goalDifference < 0">{{s.goalDifference > 0 ? '+' : ''}}{{s.goalDifference}}</td>
+                  <td class="col-pts">{{s.points}}</td>
+                  <td class="col-form hide-mobile">
+                    <span *ngFor="let r of parseForm(s.form)" class="form-dot" [class]="r">{{r === 'W' ? 'V' : r === 'D' ? 'N' : 'D'}}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CL dashboard: calendar-style with phase tabs -->
+      <div *ngIf="!loading && isCL">
+        <div class="phase-tabs" *ngIf="clPhases.length > 1">
+          <button *ngFor="let p of clPhases" class="phase-tab"
+                  [class.active]="p === clActivePhase"
+                  (click)="selectPhase(p)">{{phaseLabel(p)}}</button>
+        </div>
+
+        <div class="matchday-nav">
+          <button class="nav-btn" (click)="clPrev()" [disabled]="clIndex <= 0">&laquo;</button>
+          <span class="matchday-label">{{clCurrentEntry?.label}}</span>
+          <button class="nav-btn" (click)="clNext()" [disabled]="clIndex >= clEntries.length - 1">&raquo;</button>
+        </div>
+
+        <div class="cl-match-list">
+          <div class="cl-match-card" *ngFor="let m of clCurrentEntry?.matches"
+               [class.live]="m.status === 'IN_PLAY' || m.status === 'PAUSED'">
+            <div class="cl-match-meta">
+              <span class="cl-match-date">{{formatDateTime(m.utcDate)}}</span>
+              <span class="cl-match-status" [class]="getStatusClass(m.status)">
+                {{formatStatus(m.status)}}<span *ngIf="m.minute"> {{m.minute}}'</span>
+              </span>
+            </div>
+            <div class="cl-match-body">
+              <div class="team home">
+                <img *ngIf="m.homeTeam?.crest" [src]="m.homeTeam.crest" class="cl-crest" alt="">
+                <span class="cl-team-name">{{m.homeTeam?.shortName || m.homeTeam?.name}}</span>
+              </div>
+              <div class="cl-score-box">
+                <span *ngIf="m.score?.fullTime?.home !== null" class="cl-score">
+                  {{m.score.fullTime.home}} - {{m.score.fullTime.away}}
+                </span>
+                <span *ngIf="m.score?.fullTime?.home === null" class="cl-pending">vs</span>
+              </div>
+              <div class="team away">
+                <span class="cl-team-name">{{m.awayTeam?.shortName || m.awayTeam?.name}}</span>
+                <img *ngIf="m.awayTeam?.crest" [src]="m.awayTeam.crest" class="cl-crest" alt="">
+              </div>
+            </div>
+          </div>
+          <div *ngIf="clCurrentEntry && clCurrentEntry.matches.length === 0" class="empty-msg">Aucun match</div>
+        </div>
+      </div>
+    </div>

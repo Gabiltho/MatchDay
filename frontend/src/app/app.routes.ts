@@ -11,10 +11,6 @@ export const routes: Routes = [
     loadComponent: () => import('./views/global-calendar/global-calendar.component').then(m => m.GlobalCalendarComponent)
   },
   {
-    path: ':league/matches',
-    loadComponent: () => import('./views/matches/matches.component').then(m => m.MatchesComponent)
-  },
-  {
     path: ':league/standings',
     loadComponent: () => import('./views/standings/standings.component').then(m => m.StandingsComponent)
   },

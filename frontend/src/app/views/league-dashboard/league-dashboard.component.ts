@@ -5,99 +5,28 @@ import { FootballDataService } from '../../services/football-data.service';
 import { StateService } from '../../services/state.service';
 import { LEAGUE_LABELS } from '../../models/football.models';
 
+const CL_STAGE_ORDER = ['LEAGUE_STAGE', 'PLAYOFF', 'LAST_16', 'QUARTER_FINALS', 'SEMI_FINALS', 'FINAL'];
+const CL_STAGE_LABELS: Record<string, string> = {
+  'LEAGUE_STAGE': 'Phase de championnat',
+  'PLAYOFF': 'Barrages',
+  'LAST_16': '8emes de finale',
+  'QUARTER_FINALS': 'Quarts de finale',
+  'SEMI_FINALS': 'Demi-finales',
+  'FINAL': 'Finale',
+};
+
+interface MatchdayEntry {
+  label: string;
+  key: string;
+  matches: any[];
+}
+
 @Component({
   selector: 'app-league-dashboard',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="league-dash">
-      <h1 class="page-title">{{leagueName}}</h1>
-
-      <div class="spinner" *ngIf="loading">
-        <div class="spinner-ring"></div>
-      </div>
-
-      <div class="dash-grid" *ngIf="!loading">
-        <!-- Prochains matchs -->
-        <div class="card">
-          <h2 class="card-title">Prochains matchs</h2>
-          <div class="match-list">
-            <div class="match-row" *ngFor="let m of upcomingMatches">
-              <span class="match-date">{{formatDate(m.utcDate)}}</span>
-              <span class="match-home">{{m.homeTeam?.shortName || m.homeTeam?.name}}</span>
-              <span class="match-vs">vs</span>
-              <span class="match-away">{{m.awayTeam?.shortName || m.awayTeam?.name}}</span>
-            </div>
-            <div *ngIf="upcomingMatches.length === 0" class="empty-msg">Aucun match a venir</div>
-          </div>
-        </div>
-
-        <!-- Derniers resultats -->
-        <div class="card">
-          <h2 class="card-title">Derniers resultats</h2>
-          <div class="match-list">
-            <div class="match-row" *ngFor="let m of recentResults">
-              <span class="match-date">{{formatDate(m.utcDate)}}</span>
-              <span class="match-home" [class.winner]="m.score?.fullTime?.home > m.score?.fullTime?.away">{{m.homeTeam?.shortName}}</span>
-              <span class="match-score-sm">{{m.score?.fullTime?.home}} - {{m.score?.fullTime?.away}}</span>
-              <span class="match-away" [class.winner]="m.score?.fullTime?.away > m.score?.fullTime?.home">{{m.awayTeam?.shortName}}</span>
-            </div>
-            <div *ngIf="recentResults.length === 0" class="empty-msg">Aucun resultat</div>
-          </div>
-        </div>
-
-        <!-- Classement top 5 -->
-        <div class="card">
-          <h2 class="card-title">Classement</h2>
-          <table class="mini-table" *ngIf="standings.length > 0">
-            <thead>
-              <tr><th>#</th><th>Equipe</th><th>Pts</th><th>MJ</th><th>+/-</th></tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let s of standings.slice(0, 8)">
-                <td class="pos">{{s.position}}</td>
-                <td class="team-cell">
-                  <img *ngIf="s.team?.crest" [src]="s.team.crest" class="mini-crest" alt="">
-                  {{s.team?.shortName || s.team?.name}}
-                </td>
-                <td class="pts">{{s.points}}</td>
-                <td>{{s.playedGames}}</td>
-                <td>{{s.goalDifference > 0 ? '+' : ''}}{{s.goalDifference}}</td>
-              </tr>
-            </tbody>
-          </table>
-          <button class="see-all" (click)="router.navigate(['/' + leagueCode + '/standings'])">Voir tout</button>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .league-dash { padding: 16px; max-width: 1200px; margin: 0 auto; }
-    .page-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 16px; }
-    .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; }
-    .card-title { font-size: .95rem; font-weight: 700; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-    .match-list { display: flex; flex-direction: column; gap: 6px; }
-    .match-row { display: flex; align-items: center; gap: 8px; font-size: .85rem; padding: 4px 0; }
-    .match-date { color: var(--fg3); font-size: .75rem; min-width: 80px; }
-    .match-home { flex: 1; text-align: right; font-weight: 600; }
-    .match-vs { color: var(--fg3); font-size: .7rem; }
-    .match-away { flex: 1; font-weight: 600; }
-    .match-score-sm { font-family: 'JetBrains Mono', monospace; font-weight: 800; min-width: 40px; text-align: center; }
-    .winner { color: var(--green); }
-    .empty-msg { color: var(--fg3); font-size: .85rem; text-align: center; padding: 12px; }
-    .mini-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
-    .mini-table th { text-align: left; color: var(--fg3); font-weight: 600; font-size: .7rem; text-transform: uppercase; padding: 4px; border-bottom: 1px solid var(--border); }
-    .mini-table td { padding: 5px 4px; border-bottom: 1px solid var(--surface); }
-    .pos { font-weight: 700; color: var(--fg3); width: 24px; }
-    .team-cell { display: flex; align-items: center; gap: 6px; font-weight: 600; }
-    .mini-crest { height: 18px; width: 18px; object-fit: contain; }
-    .pts { font-weight: 800; color: var(--green); }
-    .see-all { display: block; width: 100%; margin-top: 12px; padding: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--fg2); cursor: pointer; font-size: .8rem; transition: all var(--duration) var(--ease); }
-    .see-all:hover { border-color: var(--green); color: var(--green); }
-    .spinner { display: flex; justify-content: center; padding: 60px; }
-    .spinner-ring { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin .8s linear infinite; }
-  `]
+  templateUrl: './league-dashboard.component.html',
+  styleUrls: ['./league-dashboard.component.scss']
 })
 export class LeagueDashboardComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -108,41 +37,203 @@ export class LeagueDashboardComponent implements OnInit {
   leagueCode = '';
   leagueName = '';
   loading = true;
-  upcomingMatches: any[] = [];
-  recentResults: any[] = [];
+  isCL = false;
+
+  // Regular league
   standings: any[] = [];
+  lastMatchday = 0;
+  nextMatchday = 0;
+  lastMatchdayMatches: any[] = [];
+  nextMatchdayMatches: any[] = [];
+
+  // CL calendar
+  allMatches: any[] = [];
+  clPhases: string[] = [];
+  clActivePhase = '';
+  clEntries: MatchdayEntry[] = [];
+  clIndex = 0;
+
+  get clCurrentEntry(): MatchdayEntry | null {
+    return this.clEntries[this.clIndex] ?? null;
+  }
 
   ngOnInit() {
     this.leagueCode = this.route.snapshot.paramMap.get('league') ?? '';
     this.leagueName = LEAGUE_LABELS[this.leagueCode] ?? this.leagueCode;
+    this.isCL = this.leagueCode === 'CL';
 
     const season = this.state.season();
 
-    this.footballData.getMatches(this.leagueCode, season).subscribe({
-      next: (data: any) => {
-        const matches = data.matches ?? [];
-        const now = new Date();
-        this.upcomingMatches = matches
-          .filter((m: any) => m.status === 'TIMED' || m.status === 'SCHEDULED')
-          .slice(0, 5);
-        this.recentResults = matches
-          .filter((m: any) => m.status === 'FINISHED')
-          .reverse()
-          .slice(0, 5);
-      },
-      error: () => {}
-    });
+    if (this.isCL) {
+      this.footballData.getMatches(this.leagueCode, season).subscribe({
+        next: (data: any) => {
+          this.allMatches = data.matches ?? [];
+          this.buildCLPhases();
+          this.selectPhase(this.detectDefaultPhase());
+          this.loading = false;
+        },
+        error: () => { this.loading = false; }
+      });
+    } else {
+      let matchesLoaded = false;
+      let standingsLoaded = false;
 
-    this.footballData.getStandings(this.leagueCode, season).subscribe({
-      next: (data: any) => {
-        this.standings = data.standings?.[0]?.table ?? [];
-        this.loading = false;
-      },
-      error: () => { this.loading = false; }
-    });
+      this.footballData.getMatches(this.leagueCode, season).subscribe({
+        next: (data: any) => {
+          this.computeMatchdays(data.matches ?? []);
+          matchesLoaded = true;
+          if (standingsLoaded) this.loading = false;
+        },
+        error: () => { matchesLoaded = true; if (standingsLoaded) this.loading = false; }
+      });
+
+      this.footballData.getStandings(this.leagueCode, season).subscribe({
+        next: (data: any) => {
+          const standings = data.standings ?? [];
+          const total = standings.find((s: any) => s.type === 'TOTAL') ?? standings[0];
+          this.standings = total?.table ?? [];
+          standingsLoaded = true;
+          if (matchesLoaded) this.loading = false;
+        },
+        error: () => { standingsLoaded = true; if (matchesLoaded) this.loading = false; }
+      });
+    }
   }
 
-  formatDate(utcDate: string): string {
-    return new Date(utcDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+  // --- Regular league ---
+  private computeMatchdays(matches: any[]) {
+    const upcoming = matches.find((m: any) =>
+      ['TIMED', 'SCHEDULED', 'IN_PLAY', 'PAUSED'].includes(m.status)
+    );
+    const currentMd = upcoming?.matchday ?? Math.max(...matches.map((m: any) => m.matchday ?? 0), 1);
+
+    const finishedMds = [...new Set(
+      matches.filter((m: any) => m.status === 'FINISHED').map((m: any) => m.matchday)
+    )].sort((a: number, b: number) => b - a);
+
+    this.lastMatchday = finishedMds.find((md: number) => md <= currentMd) ?? finishedMds[0] ?? 0;
+    this.nextMatchday = currentMd;
+
+    const currentMdMatches = matches.filter((m: any) => m.matchday === currentMd);
+    const allFinished = currentMdMatches.length > 0 && currentMdMatches.every((m: any) => m.status === 'FINISHED');
+    if (allFinished) {
+      this.lastMatchday = currentMd;
+      this.nextMatchday = currentMd + 1;
+    }
+
+    this.lastMatchdayMatches = matches.filter((m: any) => m.matchday === this.lastMatchday && m.status === 'FINISHED');
+    this.nextMatchdayMatches = matches.filter((m: any) => m.matchday === this.nextMatchday && m.status !== 'FINISHED');
+  }
+
+  // --- CL ---
+  private buildCLPhases() {
+    const stagesInData = [...new Set(this.allMatches.map((m: any) => m.stage))];
+    this.clPhases = CL_STAGE_ORDER.filter(s => stagesInData.includes(s));
+    if (this.clPhases.length === 0 && stagesInData.length > 0) {
+      this.clPhases = stagesInData;
+    }
+  }
+
+  private detectDefaultPhase(): string {
+    for (const phase of this.clPhases) {
+      const matches = this.allMatches.filter((m: any) => m.stage === phase);
+      if (matches.some((m: any) => ['TIMED', 'SCHEDULED', 'IN_PLAY', 'PAUSED'].includes(m.status))) {
+        return phase;
+      }
+    }
+    return this.clPhases[this.clPhases.length - 1] || '';
+  }
+
+  selectPhase(phase: string) {
+    this.clActivePhase = phase;
+    this.buildCLEntries();
+    this.goToDefaultEntry();
+  }
+
+  private buildCLEntries() {
+    const phaseMatches = this.allMatches.filter((m: any) => m.stage === this.clActivePhase);
+
+    if (this.clActivePhase === 'LEAGUE_STAGE') {
+      const grouped = new Map<number, any[]>();
+      for (const m of phaseMatches) {
+        const md = m.matchday ?? 0;
+        if (!grouped.has(md)) grouped.set(md, []);
+        grouped.get(md)!.push(m);
+      }
+      this.clEntries = Array.from(grouped.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([md, ms]) => ({
+          label: `Journee ${md}`,
+          key: `league-${md}`,
+          matches: ms.sort((a: any, b: any) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime())
+        }));
+    } else {
+      const label = CL_STAGE_LABELS[this.clActivePhase] || this.clActivePhase;
+      const grouped = new Map<number, any[]>();
+      for (const m of phaseMatches) {
+        const md = m.matchday ?? 1;
+        if (!grouped.has(md)) grouped.set(md, []);
+        grouped.get(md)!.push(m);
+      }
+      if (grouped.size > 1) {
+        this.clEntries = Array.from(grouped.entries())
+          .sort(([a], [b]) => a - b)
+          .map(([, ms], i) => ({
+            label: `${label} — ${i === 0 ? 'Aller' : 'Retour'}`,
+            key: `ko-${this.clActivePhase}-${i}`,
+            matches: ms.sort((a: any, b: any) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime())
+          }));
+      } else {
+        this.clEntries = [{
+          label,
+          key: `ko-${this.clActivePhase}`,
+          matches: phaseMatches.sort((a: any, b: any) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime())
+        }];
+      }
+    }
+  }
+
+  private goToDefaultEntry() {
+    const idx = this.clEntries.findIndex(e =>
+      e.matches.some((m: any) => ['TIMED', 'SCHEDULED', 'IN_PLAY', 'PAUSED'].includes(m.status))
+    );
+    this.clIndex = idx >= 0 ? idx : this.clEntries.length - 1;
+  }
+
+  phaseLabel(phase: string): string {
+    return CL_STAGE_LABELS[phase] || phase;
+  }
+
+  clPrev() { if (this.clIndex > 0) this.clIndex--; }
+  clNext() { if (this.clIndex < this.clEntries.length - 1) this.clIndex++; }
+
+  // --- Shared ---
+  formatStatus(status: string): string {
+    switch (status) {
+      case 'IN_PLAY': return 'LIVE';
+      case 'PAUSED': return 'MI-TEMPS';
+      case 'FINISHED': return 'TERMINE';
+      default: return 'A VENIR';
+    }
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'IN_PLAY': return 'live';
+      case 'PAUSED': return 'ht';
+      case 'FINISHED': return 'finished';
+      default: return 'scheduled';
+    }
+  }
+
+  parseForm(form: string | null): string[] {
+    if (!form) return [];
+    return form.split(',').map(f => f.trim()).filter(f => f);
+  }
+
+  formatDateTime(utcDate: string): string {
+    const d = new Date(utcDate);
+    return d.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' })
+      + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   }
 }

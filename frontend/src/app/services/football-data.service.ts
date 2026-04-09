@@ -21,13 +21,15 @@ export class FootballDataService {
     );
   }
 
-  getMatches(code: string, season?: string, matchday?: number): Observable<any> {
+  getMatches(code: string, season?: string, matchday?: number, forceRefresh = false): Observable<any> {
+    const key = `matches:${code}:${season}:${matchday}`;
+    if (forceRefresh) this.cache.delete(key);
     let url = `${this.base}/competitions/${code}/matches`;
     const params: string[] = [];
     if (season) params.push(`season=${season}`);
     if (matchday) params.push(`matchday=${matchday}`);
     if (params.length) url += '?' + params.join('&');
-    return this.cached(`matches:${code}:${season}:${matchday}`, () =>
+    return this.cached(key, () =>
       this.http.get(url)
     );
   }
@@ -56,7 +58,8 @@ export class FootballDataService {
     );
   }
 
-  getTodayMatches(): Observable<any> {
+  getTodayMatches(forceRefresh = false): Observable<any> {
+    if (forceRefresh) this.cache.delete('today');
     return this.cached('today', () =>
       this.http.get(`${this.base}/matches/today`)
     );

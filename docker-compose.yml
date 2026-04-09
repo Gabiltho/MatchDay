@@ -25,6 +25,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     container_name: matchday-frontend-dev
+    environment:
+      - API_URL=http://backend:5000
     ports:
       - "4200:4200"
     volumes:

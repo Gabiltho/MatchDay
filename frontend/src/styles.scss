@@ -1,5 +1,5 @@
 // =============================================================================
-// MatchDay — Football-inspired Global Styles
+// MatchDay 2026 — Modern Football Experience
 // =============================================================================
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
@@ -12,78 +12,95 @@
   --sp-6: 24px;
   --sp-8: 32px;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.35), 0 2px 4px rgba(0,0,0,.2);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,.5), 0 4px 12px rgba(0,0,0,.3);
-  --shadow-glow: 0 0 30px rgba(0,179,65,.2), 0 0 60px rgba(0,179,65,.08);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.25), 0 0 1px rgba(0,0,0,.15);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.15);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.2);
+  --shadow-glow: 0 0 40px rgba(0,220,80,.15), 0 0 80px rgba(0,220,80,.06);
+  --shadow-card: 0 2px 8px rgba(0,0,0,.2), 0 0 1px rgba(255,255,255,.04);
 
   --ease: cubic-bezier(.4, 0, .2, 1);
   --ease-spring: cubic-bezier(.175, .885, .32, 1.275);
+  --ease-out: cubic-bezier(0, 0, .2, 1);
   --duration: .2s;
   --duration-slow: .35s;
 
-  // Theme — dark (stadium night)
-  --bg:         #0f1012;
-  --bg2:        #181a1e;
-  --bg3:        #1e2026;
-  --bg4:        #272a30;
-  --fg:         #fff;
-  --fg2:        #b0b0b0;
-  --fg3:        #787878;
-  --fg4:        #484848;
-  --border:     #2a2d35;
-  --green:      #00b341;
-  --green-soft: #00d95f;
-  --red:        #e8001d;
+  // Theme — dark
+  --bg:         #0a0b0e;
+  --bg2:        #111318;
+  --bg3:        #181b21;
+  --bg4:        #1f222a;
+  --fg:         #f0f0f2;
+  --fg2:        #a0a4b0;
+  --fg3:        #686c78;
+  --fg4:        #3e4150;
+  --border:     #1e2130;
+  --border-subtle: rgba(255,255,255,.05);
+  --green:      #34d399;
+  --green-soft: #6ee7b7;
+  --green-dim:  rgba(52,211,153,.12);
+  --green-dim2: rgba(52,211,153,.06);
+  --red:        #ff2d4a;
+  --red-dim:    rgba(255,45,74,.1);
   --purple:     #a855f7;
-  --orange:     #ff8700;
+  --orange:     #ff8c00;
   --gold:       #ffd700;
   --silver:     #c0c0c0;
   --bronze:     #cd7f32;
   --sel-bg:     #1a1a1a;
   --sel-border: #444;
-  --hover:      #252830;
-  --card:       #14161a;
+  --hover:      rgba(255,255,255,.04);
+  --card:       #0f1117;
+  --card-hover: #13151d;
   --err-bg:     #2d1117;
-  --surface:    rgba(255,255,255,.04);
-  --surface-raised: rgba(255,255,255,.06);
-  --glass:      rgba(15,16,18,.92);
-  --glass-border: rgba(255,255,255,.08);
-  --focus-ring: rgba(0,179,65,.5);
-  --gradient-accent: linear-gradient(135deg, #00b341, #00d95f);
-  --gradient-surface: linear-gradient(180deg, rgba(255,255,255,.03) 0%, transparent 100%);
+  --surface:    rgba(255,255,255,.03);
+  --surface-raised: rgba(255,255,255,.05);
+  --glass:      rgba(10,11,14,.88);
+  --glass-border: rgba(255,255,255,.06);
+  --focus-ring: rgba(52,211,153,.5);
+  --gradient-accent: linear-gradient(135deg, #10b981, #34d399);
+  --gradient-surface: linear-gradient(180deg, rgba(255,255,255,.02) 0%, transparent 100%);
+  --gradient-card: linear-gradient(180deg, rgba(255,255,255,.025) 0%, transparent 50%);
+  --gradient-glow: radial-gradient(ellipse at 50% 0%, rgba(52,211,153,.04) 0%, transparent 50%);
 }
 
 body.light {
-  --bg:         #f0f2f5;
-  --bg2:        #e4e6ea;
+  --bg:         #f4f5f7;
+  --bg2:        #ebedf0;
   --bg3:        #fff;
-  --bg4:        #f5f5f5;
-  --fg:         #111;
-  --fg2:        #444;
-  --fg3:        #777;
-  --fg4:        #aaa;
-  --border:     #d0d3d8;
+  --bg4:        #f8f9fa;
+  --fg:         #0f1119;
+  --fg2:        #4a4e5c;
+  --fg3:        #8a8e9a;
+  --fg4:        #bcc0c8;
+  --border:     #dfe1e6;
+  --border-subtle: rgba(0,0,0,.04);
   --sel-bg:     #e8e8e8;
   --sel-border: #c0c0c0;
-  --hover:      #e0e3e8;
+  --hover:      rgba(0,0,0,.03);
   --card:       #fff;
+  --card-hover: #fafbfc;
   --err-bg:     #fdecea;
-  --surface:    rgba(0,0,0,.03);
-  --glass:      rgba(255,255,255,.92);
-  --glass-border: rgba(0,0,0,.08);
-  --focus-ring: rgba(0,179,65,.4);
-  --surface-raised: rgba(0,0,0,.04);
-  --gradient-surface: linear-gradient(180deg, rgba(0,0,0,.02) 0%, transparent 100%);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.1), 0 2px 4px rgba(0,0,0,.06);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.08);
-  --shadow-glow: 0 0 30px rgba(0,179,65,.06), 0 0 60px rgba(0,179,65,.03);
+  --surface:    rgba(0,0,0,.02);
+  --glass:      rgba(255,255,255,.9);
+  --glass-border: rgba(0,0,0,.06);
+  --focus-ring: rgba(16,185,129,.4);
+  --surface-raised: rgba(0,0,0,.03);
+  --gradient-surface: linear-gradient(180deg, rgba(0,0,0,.015) 0%, transparent 100%);
+  --gradient-card: linear-gradient(180deg, rgba(0,0,0,.01) 0%, transparent 50%);
+  --gradient-glow: none;
+  --green-dim:  rgba(16,185,129,.1);
+  --green-dim2: rgba(16,185,129,.05);
+  --red-dim:    rgba(255,45,74,.08);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.1), 0 4px 12px rgba(0,0,0,.06);
+  --shadow-glow: none;
+  --shadow-card: 0 1px 4px rgba(0,0,0,.06), 0 0 1px rgba(0,0,0,.08);
 }
 
 // ── Reset + base ──────────────────────────────────────────────────────────────
@@ -91,14 +108,14 @@ body.light {
 html, body { height: 100%; }
 
 body {
-  font-family: 'Titillium Web', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   background: var(--bg);
   color: var(--fg);
   min-height: 100vh;
   transition: background var(--duration-slow) var(--ease), color var(--duration-slow) var(--ease);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  line-height: 1.45;
+  line-height: 1.5;
   font-size: 14px;
   font-weight: 400;
 
@@ -106,16 +123,16 @@ body {
     content: '';
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at 50% 0%, rgba(0,179,65,.03) 0%, transparent 60%);
+    background: var(--gradient-glow);
     pointer-events: none;
     z-index: 0;
   }
 }
 
 // ── Scrollbar ─────────────────────────────────────────────────────────────────
-::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar        { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track  { background: transparent; }
-::-webkit-scrollbar-thumb  { background: var(--fg4); border-radius: 3px;
+::-webkit-scrollbar-thumb  { background: var(--fg4); border-radius: 99px;
   &:hover { background: var(--green); }
 }
 
@@ -140,8 +157,8 @@ body {
   display: flex;
   align-items: center;
   background: var(--glass);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
   border-bottom: 1px solid var(--glass-border);
   padding: var(--sp-2) var(--sp-5);
   gap: var(--sp-3);
@@ -149,7 +166,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 1px 0 var(--glass-border), var(--shadow-md);
+  box-shadow: var(--shadow-md);
 
   &::before {
     content: '';
@@ -157,7 +174,7 @@ body {
     top: 0; left: 0; right: 0;
     height: 2px;
     background: var(--gradient-accent);
-    opacity: .8;
+    opacity: .7;
   }
 }
 
@@ -184,19 +201,24 @@ body {
 }
 
 .champ-tab {
-  padding: 6px 14px;
-  font-size: .75rem;
+  padding: 7px 14px;
+  font-size: .72rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .5px;
+  letter-spacing: .6px;
   color: var(--fg3);
   cursor: pointer;
   border-radius: var(--radius-sm);
   transition: all var(--duration) var(--ease);
   white-space: nowrap;
+  position: relative;
 
-  &:hover { color: var(--fg); background: var(--surface); }
-  &.active { color: var(--green); background: rgba(0,179,65,.1); font-weight: 700; }
+  &:hover { color: var(--fg2); background: var(--hover); }
+  &.active {
+    color: var(--green);
+    background: var(--green-dim);
+    font-weight: 700;
+  }
 }
 
 // ── Top right controls ────────────────────────────────────────────────────────
@@ -226,14 +248,15 @@ body {
   cursor: pointer;
   border-radius: var(--radius-sm);
   transition: all var(--duration) var(--ease);
-  &:hover { color: var(--fg); background: var(--surface); border-color: var(--border); }
+  &:hover { color: var(--fg); background: var(--hover); border-color: var(--border); }
   &.spin { animation: spin .6s linear; }
 }
 
 .status-dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--fg4);
-  &.live { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  transition: all var(--duration) var(--ease);
+  &.live { background: var(--green); box-shadow: 0 0 8px var(--green); }
   &.finished { background: var(--fg3); }
 }
 
@@ -243,24 +266,24 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   margin: var(--sp-2) var(--sp-5);
-  padding: var(--sp-3);
-  box-shadow: var(--shadow-md);
+  padding: var(--sp-4);
+  box-shadow: var(--shadow-lg);
 }
 
 .reorder-head {
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-2);
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-3);
   font-weight: 700; font-size: .85rem;
 }
 
 .reorder-close { background: none; border: none; color: var(--fg3); cursor: pointer; font-size: 1rem; }
 .reorder-list { display: flex; flex-direction: column; gap: 4px; }
-.reorder-item { display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: var(--surface); border-radius: var(--radius-sm); }
+.reorder-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); }
 .reorder-label { flex: 1; font-size: .8rem; font-weight: 600; }
-.reorder-btn { background: none; border: 1px solid var(--border); color: var(--fg3); border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: .7rem;
+.reorder-btn { background: none; border: 1px solid var(--border); color: var(--fg3); border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: .7rem;
   &:hover:not(:disabled) { color: var(--green); border-color: var(--green); }
   &:disabled { opacity: .3; }
 }
-.reorder-reset { margin-top: var(--sp-2); background: var(--surface); border: 1px solid var(--border); color: var(--fg3); padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: .75rem; width: 100%;
+.reorder-reset { margin-top: var(--sp-3); background: var(--surface); border: 1px solid var(--border); color: var(--fg3); padding: 8px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: .75rem; width: 100%; transition: all var(--duration) var(--ease);
   &:hover { border-color: var(--green); color: var(--green); }
 }
 
@@ -276,17 +299,17 @@ body {
 }
 
 .sub-tab {
-  padding: 5px 12px;
+  padding: 6px 14px;
   font-size: .72rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .3px;
+  letter-spacing: .4px;
   color: var(--fg3);
   cursor: pointer;
   border-radius: var(--radius-sm);
   transition: all var(--duration) var(--ease);
-  &:hover { color: var(--fg); background: var(--surface); }
-  &.active { color: var(--green); background: rgba(0,179,65,.1); }
+  &:hover { color: var(--fg2); background: var(--hover); }
+  &.active { color: var(--green); background: var(--green-dim); }
 }
 
 // ── Timestamp ─────────────────────────────────────────────────────────────────
@@ -303,6 +326,6 @@ body {
 // ── Responsive ────────────────────────────────────────────────────────────────
 @media (max-width: 768px) {
   .top-bar { padding: var(--sp-2) var(--sp-3); gap: var(--sp-2); }
-  .champ-tab { padding: 4px 8px; font-size: .65rem; }
-  .sub-tab { padding: 4px 8px; font-size: .65rem; }
+  .champ-tab { padding: 4px 8px; font-size: .63rem; }
+  .sub-tab { padding: 4px 8px; font-size: .63rem; }
 }

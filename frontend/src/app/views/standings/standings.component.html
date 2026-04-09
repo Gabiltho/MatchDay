@@ -1,0 +1,65 @@
+<div class="standings-page">
+      <h1 class="page-title">{{leagueName}} — Classement</h1>
+
+      <div class="spinner" *ngIf="loading">
+        <div class="spinner-ring"></div>
+      </div>
+
+      <div *ngIf="!loading">
+        <!-- Type tabs -->
+        <div class="type-tabs">
+          <button *ngFor="let t of availableTypes" class="type-tab"
+                  [class.active]="t === activeType"
+                  (click)="selectType(t)">{{typeLabel(t)}}</button>
+        </div>
+
+        <div *ngFor="let group of activeGroups" class="standings-group">
+          <h2 class="group-title" *ngIf="group.name">{{group.name}}</h2>
+          <div class="table-wrapper">
+            <table class="standings-table">
+              <thead>
+                <tr>
+                  <th class="col-pos">#</th>
+                  <th class="col-team">Equipe</th>
+                  <th>MJ</th>
+                  <th>V</th>
+                  <th>N</th>
+                  <th>D</th>
+                  <th>BP</th>
+                  <th>BC</th>
+                  <th>+/-</th>
+                  <th class="col-pts">Pts</th>
+                  <th class="col-form">Forme</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of group.table; index as i"
+                    [class.zone-cl]="getZone(i, group) === 'cl'"
+                    [class.zone-el]="getZone(i, group) === 'el'"
+                    [class.zone-playoff]="getZone(i, group) === 'playoff'"
+                    [class.zone-rel]="getZone(i, group) === 'rel'">
+                  <td class="col-pos">{{row.position}}</td>
+                  <td class="col-team">
+                    <img *ngIf="row.team?.crest" [src]="row.team.crest" class="team-crest" alt="">
+                    <span class="team-name">{{row.team?.shortName || row.team?.name}}</span>
+                  </td>
+                  <td>{{row.playedGames}}</td>
+                  <td>{{row.won}}</td>
+                  <td>{{row.draw}}</td>
+                  <td>{{row.lost}}</td>
+                  <td>{{row.goalsFor}}</td>
+                  <td>{{row.goalsAgainst}}</td>
+                  <td [class.positive]="row.goalDifference > 0" [class.negative]="row.goalDifference < 0">
+                    {{row.goalDifference > 0 ? '+' : ''}}{{row.goalDifference}}
+                  </td>
+                  <td class="col-pts">{{row.points}}</td>
+                  <td class="col-form">
+                    <span *ngFor="let r of parseForm(row.form)" class="form-dot" [class]="r">{{r === 'W' ? 'V' : r === 'D' ? 'N' : 'D'}}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>

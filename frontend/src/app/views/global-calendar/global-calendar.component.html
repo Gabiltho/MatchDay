@@ -1,0 +1,30 @@
+<div class="global-cal">
+      <h1 class="page-title">Calendrier global</h1>
+
+      <div class="spinner" *ngIf="loading">
+        <div class="spinner-ring"></div>
+      </div>
+
+      <div *ngFor="let day of groupedByDate" class="day-section">
+        <h2 class="day-title">{{day.label}}</h2>
+        <div class="match-card" *ngFor="let m of day.matches" (click)="goToLeague(m.competition?.code)">
+          <div class="match-comp">
+            <img *ngIf="m.competition?.emblem" [src]="m.competition.emblem" class="comp-emblem" alt="">
+            <span>{{m.competition?.name}}</span>
+          </div>
+          <div class="match-row">
+            <span class="time">{{formatTime(m.utcDate)}}</span>
+            <span class="home">{{m.homeTeam?.shortName || m.homeTeam?.name}}</span>
+            <span class="score" *ngIf="m.score?.fullTime?.home !== null">
+              {{m.score.fullTime.home}} - {{m.score.fullTime.away}}
+            </span>
+            <span class="score pending" *ngIf="m.score?.fullTime?.home === null">vs</span>
+            <span class="away">{{m.awayTeam?.shortName || m.awayTeam?.name}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!loading && groupedByDate.length === 0">
+        Aucun match cette semaine
+      </div>
+    </div>

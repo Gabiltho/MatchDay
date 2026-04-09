@@ -17,82 +17,9 @@ const STORAGE_KEY = 'matchday_league_order';
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, CommonModule, FormsModule],
-  template: `
-    <!-- Top bar -->
-    <div class="top-bar">
-      <div class="logo" (click)="goTo('/dashboard')" style="cursor:pointer">
-        <svg class="logo-svg" viewBox="0 0 140 48" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="logoGreen" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#00b341"/><stop offset="100%" stop-color="#00d95f"/>
-            </linearGradient>
-          </defs>
-          <g transform="translate(18,24)">
-            <circle r="13" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5"/>
-            <circle r="10" fill="none" stroke="#00b341" stroke-width=".8" opacity=".4"/>
-            <path d="M-4,-8 L4,-8 L6,-2 L0,2 L-6,-2Z" fill="none" stroke="currentColor" stroke-width=".8" opacity=".4"/>
-            <circle r="3" fill="none" stroke="currentColor" stroke-width=".6" opacity=".5"/>
-            <circle r="1" fill="#00b341"/>
-          </g>
-          <text x="38" y="22" font-family="'Arial Black',Impact,sans-serif" font-weight="900" font-size="17" letter-spacing="2" fill="currentColor">MATCH</text>
-          <rect x="38" y="25" width="90" height="2" rx="1" fill="url(#logoGreen)"/>
-          <text x="38" y="42" font-family="'Arial Black',Impact,sans-serif" font-weight="900" font-size="18" letter-spacing="1.5" fill="url(#logoGreen)">DAY</text>
-        </svg>
-      </div>
-
-      <div class="champ-tabs">
-        <div class="champ-tab" [class.active]="activeTab==='dashboard'" (click)="goTo('/dashboard')">Dashboard</div>
-        <div class="champ-tab" [class.active]="activeTab==='calendar'"  (click)="goTo('/calendar')">Calendrier</div>
-        <div class="champ-tab" *ngFor="let l of leagueOrder"
-             [class.active]="activeTab===l"
-             (click)="goToLeague(l)">{{leagueLabels[l]}}</div>
-      </div>
-
-      <div class="top-right">
-        <select *ngIf="activeLeague" [(ngModel)]="selectedSeason" (change)="onSeasonChange()" title="Saison">
-          <option *ngFor="let s of seasons" [value]="s">{{s}}</option>
-        </select>
-        <button class="icon-btn" (click)="clearAllCaches()" title="Vider les caches" [class.spin]="cacheBusy">&#8635;</button>
-        <button class="icon-btn" (click)="toggleTheme()" title="Theme">{{themeIcon}}</button>
-        <button class="icon-btn" (click)="showReorder = !showReorder" title="Reorganiser les onglets">&#9776;</button>
-        <span class="status-dot"
-              [class.live]="state.statusDot()==='live'"
-              [class.finished]="state.statusDot()==='finished'"></span>
-      </div>
-    </div>
-
-    <!-- Reorder panel -->
-    <div class="reorder-panel" *ngIf="showReorder">
-      <div class="reorder-head">
-        <span>Ordre des ligues</span>
-        <button class="reorder-close" (click)="showReorder = false">&#10005;</button>
-      </div>
-      <div class="reorder-list">
-        <div *ngFor="let l of leagueOrder; index as i" class="reorder-item">
-          <span class="reorder-label">{{leagueLabels[l]}}</span>
-          <button class="reorder-btn" (click)="moveLeague(i, -1)" [disabled]="i === 0">&#9650;</button>
-          <button class="reorder-btn" (click)="moveLeague(i, 1)" [disabled]="i === leagueOrder.length - 1">&#9660;</button>
-        </div>
-      </div>
-      <button class="reorder-reset" (click)="resetOrder()">Reinitialiser</button>
-    </div>
-
-    <!-- Sub nav -->
-    <div class="sub-nav" *ngIf="activeLeague">
-      <div class="sub-tab" [class.active]="!detailView"               (click)="goToLeague(activeLeague!)">Accueil</div>
-      <div class="sub-tab" [class.active]="detailView==='matches'"    (click)="goTo('/'+activeLeague+'/matches')">Matchs</div>
-      <div class="sub-tab" [class.active]="detailView==='standings'"  (click)="goTo('/'+activeLeague+'/standings')">Classement</div>
-      <div class="sub-tab" [class.active]="detailView==='calendar'"   (click)="goTo('/'+activeLeague+'/calendar')">Calendrier</div>
-    </div>
-
-    <!-- Routed view content -->
-    <router-outlet />
-
-    <!-- Timestamp -->
-    <div class="ts" *ngIf="state.timestamp()">{{state.timestamp()}}</div>
-  `,
+  templateUrl: './app.component.html',
   encapsulation: ViewEncapsulation.None,
-  styles: [`:host { display: block; }`]
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -200,7 +127,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   goToLeague(code: LeagueCode) {
-    this.router.navigate([`/${code}`]);
+    if (this.activeLeague === code && !this.detailView) return;
+    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+      this.router.navigate([`/${code}`]);
+    });
   }
 
   onSeasonChange() {

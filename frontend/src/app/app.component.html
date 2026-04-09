@@ -1,0 +1,71 @@
+<!-- Top bar -->
+    <div class="top-bar">
+      <div class="logo" (click)="goTo('/dashboard')" style="cursor:pointer">
+        <svg class="logo-svg" viewBox="0 0 180 48" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="logoPitch" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#2E7D32"/><stop offset="100%" stop-color="#1B5E20"/>
+            </linearGradient>
+          </defs>
+          <!-- Mini pitch icon -->
+          <circle cx="22" cy="24" r="20" fill="#1A1A2E"/>
+          <rect x="7" y="11" width="30" height="20" rx="1.5" fill="url(#logoPitch)" stroke="#fff" stroke-width=".8"/>
+          <line x1="22" y1="11" x2="22" y2="31" stroke="#fff" stroke-width=".5" opacity=".6"/>
+          <circle cx="22" cy="21" r="4.5" fill="none" stroke="#fff" stroke-width=".5" opacity=".6"/>
+          <circle cx="22" cy="21" r=".8" fill="#fff" opacity=".6"/>
+          <rect x="7" y="16" width="5" height="10" fill="none" stroke="#fff" stroke-width=".5" opacity=".6"/>
+          <rect x="32" y="16" width="5" height="10" fill="none" stroke="#fff" stroke-width=".5" opacity=".6"/>
+          <!-- Live dot -->
+          <circle cx="36" cy="13" r="2" fill="#F44336"/>
+          <!-- Text -->
+          <text x="50" y="22" font-family="'Arial Black',Impact,sans-serif" font-weight="900" font-size="17" letter-spacing="2" fill="currentColor">MATCH</text>
+          <text x="50" y="40" font-family="'Arial Black',Impact,sans-serif" font-weight="300" font-size="17" letter-spacing="2" fill="#4CAF50">DAY</text>
+        </svg>
+      </div>
+
+      <div class="champ-tabs">
+        <div class="champ-tab" [class.active]="activeTab==='dashboard'" (click)="goTo('/dashboard')">Dashboard</div>
+        <div class="champ-tab" [class.active]="activeTab==='calendar'"  (click)="goTo('/calendar')">Calendrier</div>
+        <div class="champ-tab" *ngFor="let l of leagueOrder"
+             [class.active]="activeTab===l"
+             (click)="goToLeague(l)">{{leagueLabels[l]}}</div>
+      </div>
+
+      <div class="top-right">
+        <button class="icon-btn" (click)="clearAllCaches()" title="Vider les caches" [class.spin]="cacheBusy">&#8635;</button>
+        <button class="icon-btn" (click)="toggleTheme()" title="Theme">{{themeIcon}}</button>
+        <button class="icon-btn" (click)="showReorder = !showReorder" title="Reorganiser les onglets">&#9776;</button>
+        <span class="status-dot"
+              [class.live]="state.statusDot()==='live'"
+              [class.finished]="state.statusDot()==='finished'"></span>
+      </div>
+    </div>
+
+    <!-- Reorder panel -->
+    <div class="reorder-panel" *ngIf="showReorder">
+      <div class="reorder-head">
+        <span>Ordre des ligues</span>
+        <button class="reorder-close" (click)="showReorder = false">&#10005;</button>
+      </div>
+      <div class="reorder-list">
+        <div *ngFor="let l of leagueOrder; index as i" class="reorder-item">
+          <span class="reorder-label">{{leagueLabels[l]}}</span>
+          <button class="reorder-btn" (click)="moveLeague(i, -1)" [disabled]="i === 0">&#9650;</button>
+          <button class="reorder-btn" (click)="moveLeague(i, 1)" [disabled]="i === leagueOrder.length - 1">&#9660;</button>
+        </div>
+      </div>
+      <button class="reorder-reset" (click)="resetOrder()">Reinitialiser</button>
+    </div>
+
+    <!-- Sub nav -->
+    <div class="sub-nav" *ngIf="activeLeague">
+      <div class="sub-tab" [class.active]="!detailView"               (click)="goToLeague(activeLeague!)">Dashboard</div>
+      <div class="sub-tab" [class.active]="detailView==='standings'"  (click)="goTo('/'+activeLeague+'/standings')">Classement</div>
+      <div class="sub-tab" [class.active]="detailView==='calendar'"   (click)="goTo('/'+activeLeague+'/calendar')">Calendrier</div>
+    </div>
+
+    <!-- Routed view content -->
+    <router-outlet />
+
+    <!-- Timestamp -->
+    <div class="ts" *ngIf="state.timestamp()">{{state.timestamp()}}</div>

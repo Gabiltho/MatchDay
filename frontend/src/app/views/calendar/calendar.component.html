@@ -1,0 +1,64 @@
+<div class="calendar-page">
+      <div class="calendar-header">
+        <h1 class="page-title">{{leagueName}} — Calendrier</h1>
+        <span class="live-indicator" *ngIf="hasLive">
+          <span class="pulse-dot"></span> LIVE
+        </span>
+        <span class="last-updated" *ngIf="lastUpdated">MAJ {{lastUpdated}}</span>
+      </div>
+
+      <div class="spinner" *ngIf="loading">
+        <div class="spinner-ring"></div>
+      </div>
+
+      <div *ngIf="!loading">
+        <!-- CL phase tabs -->
+        <div class="phase-tabs" *ngIf="isCL && phases.length > 1">
+          <button *ngFor="let p of phases" class="phase-tab"
+                  [class.active]="p === activePhase"
+                  (click)="selectPhase(p)">{{phaseLabel(p)}}</button>
+        </div>
+
+        <!-- Matchday navigation -->
+        <div class="matchday-nav">
+          <button class="nav-btn" (click)="prev()" [disabled]="currentIndex <= 0">&laquo;</button>
+          <span class="matchday-label">{{currentEntry?.label}}</span>
+          <button class="nav-btn" (click)="next()" [disabled]="currentIndex >= entries.length - 1">&raquo;</button>
+        </div>
+
+        <!-- Match list -->
+        <div class="match-list">
+          <div class="match-card" *ngFor="let m of currentEntry?.matches"
+               [class.live]="m.status === 'IN_PLAY' || m.status === 'PAUSED'">
+            <div class="match-meta">
+              <span class="match-date">{{formatDateTime(m.utcDate)}}</span>
+              <span class="match-status" [class]="getStatusClass(m.status)">
+                {{formatStatus(m.status)}}<span *ngIf="m.minute" class="match-minute"> {{m.minute}}'</span>
+              </span>
+            </div>
+            <div class="match-body">
+              <div class="team home">
+                <img *ngIf="m.homeTeam?.crest" [src]="m.homeTeam.crest" class="team-crest" alt="">
+                <span class="team-name">{{m.homeTeam?.shortName || m.homeTeam?.name}}</span>
+              </div>
+              <div class="score-box">
+                <span *ngIf="m.score?.fullTime?.home !== null" class="score">
+                  {{m.score.fullTime.home}} - {{m.score.fullTime.away}}
+                </span>
+                <span *ngIf="m.score?.fullTime?.home === null" class="pending">vs</span>
+                <span *ngIf="m.score?.halfTime?.home !== null" class="half-time">
+                  (MT: {{m.score.halfTime.home}} - {{m.score.halfTime.away}})
+                </span>
+              </div>
+              <div class="team away">
+                <span class="team-name">{{m.awayTeam?.shortName || m.awayTeam?.name}}</span>
+                <img *ngIf="m.awayTeam?.crest" [src]="m.awayTeam.crest" class="team-crest" alt="">
+              </div>
+            </div>
+            <!-- Aggregate for CL knockout -->
+            <div class="aggregate" *ngIf="m.aggregateLabel">{{m.aggregateLabel}}</div>
+          </div>
+          <div *ngIf="currentEntry && currentEntry.matches.length === 0" class="empty-state">Aucun match pour cette journee</div>
+        </div>
+      </div>
+    </div>

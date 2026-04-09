@@ -1,0 +1,35 @@
+.standings-page { padding: var(--sp-5); max-width: 1000px; margin: 0 auto; }
+    .page-title { font-size: 1.3rem; font-weight: 900; margin-bottom: var(--sp-5); letter-spacing: -.3px; }
+    .type-tabs { display: flex; gap: 6px; margin-bottom: 20px; }
+    .type-tab {
+      padding: 8px 18px; border-radius: var(--radius-sm); font-size: .78rem; font-weight: 700;
+      background: var(--surface); border: 1px solid var(--border); color: var(--fg2); cursor: pointer;
+      transition: all var(--duration) var(--ease); letter-spacing: .2px;
+    }
+    .type-tab.active { background: var(--green); color: #000; border-color: var(--green); box-shadow: 0 0 12px rgba(52,211,153,.2); }
+    .type-tab:hover:not(.active) { border-color: rgba(52,211,153,.3); background: var(--hover); }
+    .group-title { font-size: 1rem; font-weight: 800; margin: 20px 0 10px; color: var(--fg2); }
+    .table-wrapper { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-card); }
+    .standings-table { width: 100%; border-collapse: collapse; font-size: .8rem; background: var(--card); }
+    .standings-table th { text-align: center; color: var(--fg3); font-weight: 700; font-size: .65rem; text-transform: uppercase; letter-spacing: .5px; padding: 10px 6px; border-bottom: 1px solid var(--border); background: var(--surface); }
+    .standings-table th.col-team { text-align: left; }
+    .standings-table td { padding: 9px 6px; text-align: center; border-bottom: 1px solid var(--border-subtle); transition: background var(--duration) var(--ease); }
+    .standings-table tr:hover td { background: var(--hover); }
+    .col-pos { font-weight: 700; width: 32px; color: var(--fg3); font-family: 'JetBrains Mono', monospace; font-size: .75rem; }
+    .col-team { text-align: left !important; display: flex; align-items: center; gap: 10px; min-width: 160px; }
+    .team-crest { height: 22px; width: 22px; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,.2)); }
+    .team-name { font-weight: 700; white-space: nowrap; }
+    .col-pts { font-weight: 800; color: var(--green); font-size: .9rem; font-family: 'JetBrains Mono', monospace; }
+    .col-form { white-space: nowrap; }
+    .form-dot { display: inline-block; width: 20px; height: 20px; line-height: 20px; text-align: center; font-size: .6rem; font-weight: 700; border-radius: 4px; margin: 0 1px; }
+    .form-dot.W { background: var(--green); color: #000; }
+    .form-dot.D { background: var(--fg4); color: var(--fg); }
+    .form-dot.L { background: var(--red); color: #fff; }
+    .positive { color: var(--green); }
+    .negative { color: var(--red); }
+    .zone-cl td:first-child { border-left: 3px solid var(--green); }
+    .zone-el td:first-child { border-left: 3px solid var(--orange); }
+    .zone-playoff td:first-child { border-left: 3px solid #7c4dff; }
+    .zone-rel td:first-child { border-left: 3px solid var(--red); }
+    .spinner { display: flex; justify-content: center; padding: 60px; }
+    .spinner-ring { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin .7s linear infinite; }

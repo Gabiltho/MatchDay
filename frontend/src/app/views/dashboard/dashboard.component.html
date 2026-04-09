@@ -1,0 +1,78 @@
+<div class="dashboard">
+      <div class="title-row">
+        <h1 class="page-title">Matchs du jour</h1>
+        <span class="live-indicator" *ngIf="hasLive">
+          <span class="pulse-dot"></span> LIVE
+        </span>
+        <span class="last-updated" *ngIf="lastUpdated">MAJ {{lastUpdated}}</span>
+      </div>
+
+      <div class="today-matches" *ngIf="todayMatches.length > 0">
+        <div class="match-card" *ngFor="let m of todayMatches" (click)="goToLeague(m.competition?.code)">
+          <div class="match-competition">
+            <img *ngIf="m.competition?.emblem" [src]="m.competition.emblem" class="comp-emblem" alt="">
+            <span>{{m.competition?.name}}</span>
+            <span class="match-status" [class]="getStatusClass(m.status)">
+              {{formatStatus(m.status)}}<span *ngIf="m.minute" class="match-minute"> {{m.minute}}'</span>
+            </span>
+          </div>
+          <div class="match-teams">
+            <div class="team home">
+              <img *ngIf="m.homeTeam?.crest" [src]="m.homeTeam.crest" class="team-crest" alt="">
+              <span class="team-name">{{m.homeTeam?.shortName || m.homeTeam?.name}}</span>
+            </div>
+            <div class="match-score">
+              <span *ngIf="m.score?.fullTime?.home !== null">
+                {{m.score?.fullTime?.home}} - {{m.score?.fullTime?.away}}
+              </span>
+              <span *ngIf="m.score?.fullTime?.home === null" class="match-time">
+                {{formatTime(m.utcDate)}}
+              </span>
+            </div>
+            <div class="team away">
+              <span class="team-name">{{m.awayTeam?.shortName || m.awayTeam?.name}}</span>
+              <img *ngIf="m.awayTeam?.crest" [src]="m.awayTeam.crest" class="team-crest" alt="">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!loading && todayMatches.length === 0">
+        <p>Aucun match aujourd'hui</p>
+      </div>
+
+      <div class="spinner" *ngIf="loading">
+        <div class="spinner-ring"></div>
+      </div>
+
+      <h2 class="section-title">Classements</h2>
+      <div class="standings-grid">
+        <div class="standings-card" *ngFor="let lg of leagueStandings" (click)="goToLeague(lg.code)">
+          <div class="standings-card-header">
+            <span class="standings-flag">{{lg.flag}}</span>
+            <span class="standings-league-name">{{lg.name}}</span>
+          </div>
+          <table class="mini-table" *ngIf="lg.table.length > 0">
+            <thead>
+              <tr><th class="col-pos">#</th><th class="col-team">Equipe</th><th>MJ</th><th>+/-</th><th class="col-pts">Pts</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of lg.table">
+                <td class="col-pos">{{row.position}}</td>
+                <td class="col-team">
+                  <img *ngIf="row.team?.crest" [src]="row.team.crest" class="mini-crest" alt="">
+                  <span>{{row.team?.shortName || row.team?.name}}</span>
+                </td>
+                <td>{{row.playedGames}}</td>
+                <td [class.positive]="row.goalDifference > 0" [class.negative]="row.goalDifference < 0">{{row.goalDifference > 0 ? '+' : ''}}{{row.goalDifference}}</td>
+                <td class="col-pts">{{row.points}}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="mini-spinner" *ngIf="lg.table.length === 0 && standingsLoading">
+            <div class="spinner-ring small"></div>
+          </div>
+          <div class="no-data" *ngIf="lg.table.length === 0 && !standingsLoading">Classement indisponible</div>
+        </div>
+      </div>
+    </div>

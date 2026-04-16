@@ -12,6 +12,7 @@ services:
       - matchday-data:/app/data
     networks:
       - matchday-network
+      - monitoring-net
     restart: unless-stopped
     deploy:
       resources:
@@ -36,6 +37,8 @@ services:
 networks:
   matchday-network:
     driver: bridge
+  monitoring-net:
+    external: true
 
 volumes:
   matchday-data:

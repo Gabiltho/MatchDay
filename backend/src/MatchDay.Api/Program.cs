@@ -1,3 +1,6 @@
+using Serilog;
+using Serilog.Formatting.Compact;
+using Prometheus;
 using System.Net;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -7,7 +10,21 @@ using MatchDay.Api.Data;
 using MatchDay.Api.Middleware;
 using MatchDay.Api.Services;
 
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console(new RenderedCompactJsonFormatter())
+    .CreateBootstrapLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((ctx, services, config) =>
+{
+    config
+        .ReadFrom.Configuration(ctx.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("Application", "MatchDay")
+        .WriteTo.Console(new RenderedCompactJsonFormatter());
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -139,6 +156,7 @@ if (app.Environment.IsDevelopment())
 app.UseRateLimiter();
 app.UseCors("AllowAngular");
 app.UseAuthorization();
+app.UseSerilogRequestLogging();
 app.MapControllers();
 
 app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
@@ -163,6 +181,8 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
 });
 
 app.MapGet("/health/live", () => Results.Ok(new { status = "Healthy" }));
+
+app.MapMetrics();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -189,4 +209,16 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Run();
+try
+{
+    Log.Information("Starting MatchDay API");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "MatchDay API terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
